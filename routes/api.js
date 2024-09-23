@@ -41,7 +41,7 @@ module.exports = function (app) {
     
     .post(async (req, res) => {
       let projectName = req.params.project;
-
+      try{
       const {
         issue_title,
         issue_text,
@@ -55,8 +55,6 @@ module.exports = function (app) {
         return;
       }
 
-
-      try{
         let project = await ProjectModel.findOne({ name: projectName });
         if (!project){
           project = new ProjectModel({ name: projectName });
@@ -98,8 +96,61 @@ module.exports = function (app) {
       
     
     
-    .put(function (req, res){
+    .put(async (req, res) => {
+
+      try{
       let projectName = req.params.project;
+      // let update = false;
+
+      const {
+        _id,
+        issue_title,
+        issue_text,
+        created_by,
+        assigned_to,
+        status_text,
+        open,
+      } = req.body;
+
+
+      if(!_id){
+        res.json({error: 'missing _id' });
+        return
+      }
+
+      if(
+        !issue_title && 
+        !issue_text &&
+        !created_by &&
+        !assigned_to &&
+        !status_text &&
+        !open ){
+          res.json({error: 'no update field(s) sent', '_id': _id});
+        return
+      }
+
+        let issue = await IssueModel.findOne({ _id: _id});
+
+        if(!issue){
+          res.json({error: 'could not update', '_id': _id});
+          return
+        } else {
+            await IssueModel.updateOne({ _id: _id },{issue_title : issue_title , issue_text : issue_text , created_by : created_by,assigned_to : assigned_to,status_text : status_text});
+            const isOpen = Boolean(open)
+            if(issue.open != isOpen){
+              await IssueModel.updateOne({ _id: _id },{open : isOpen});
+            }
+
+          await IssueModel.updateOne({ _id: _id }, {updated_on : new Date()});
+          res.json({result: 'successfully updated', '_id': _id});
+          return
+        }
+
+
+      }catch(err){
+        res.json({error: 'could not update', '_id': _id});
+      }
+
       
     })
     
