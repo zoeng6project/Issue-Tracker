@@ -100,7 +100,6 @@ module.exports = function (app) {
 
       try{
       let projectName = req.params.project;
-      // let update = false;
 
       const {
         _id,
@@ -132,7 +131,7 @@ module.exports = function (app) {
         let issue = await IssueModel.findOne({ _id: _id});
 
         if(!issue){
-          res.json({error: 'could not update', '_id': _id});
+          res.json({error: 'could not update', '_id': req.body._id || 'unknown'});
           return
         } else {
             await IssueModel.updateOne({ _id: _id },{issue_title : issue_title , issue_text : issue_text , created_by : created_by,assigned_to : assigned_to,status_text : status_text});
@@ -148,7 +147,7 @@ module.exports = function (app) {
 
 
       }catch(err){
-        res.json({error: 'could not update', '_id': _id});
+        res.json({error: 'could not update', '_id':req.body._id || 'unknown'});
       }
 
       
